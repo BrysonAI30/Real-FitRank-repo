@@ -26,5 +26,5 @@ Full project context: docs/ROADMAP.md (read only when needed).
 - Tell me when a change is a good commit point and suggest a message.
 
 ## Current priority
-Phase 1: multi-exercise workout sessions with per-set weight and reps,
-saved in a way that ELO can use later.
+The project is paused (2026-11-04). The live site is local-only; accounts
+(step 7) were reverted. See docs/PAUSED.md for status and how to resume.
