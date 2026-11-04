@@ -25,13 +25,7 @@ const { Home, Workouts, Progress, Food, Settings } = load('src/app/pages.tsx');
 const empty = {version:3,workouts:[],goals:[],elo:0};
 const workout = (id,date,weight,earned) => ({id,completedAt:date,earned,exercises:[{exerciseId:'bench-press',sets:[{weightLbs:weight,reps:8}]}]});
 const data = {version:3,elo:36,goals:[],workouts:[workout('one','2026-09-14T12:00:00',100,12),workout('two','2026-09-18T12:00:00',105,24)]};
-// Screens that read the signed-in account get a fake one backed by memory.
-const { AccountContext } = load('src/cloud/accountContext.ts');
-const memory = new Map();
-const account = { user:{id:'test-user',email:'lifter@example.com'}, storage:{getItem:key=>memory.get(key)??null,setItem:(key,value)=>memory.set(key,value),removeItem:key=>memory.delete(key)},
-  sync:{state:'idle',rejected:[]}, syncNow:async()=>true, dataVersion:0, deviceImport:null, importDevice:async()=>0, declineImport(){}, signOut:async()=>{}, deleteAccount:async()=>{} };
-const renderAs = (value,component,props) => renderToStaticMarkup(React.createElement(AccountContext.Provider,{value},React.createElement(component,props)));
-const render = (component,props) => renderAs(account,component,props);
+const render = (component,props) => renderToStaticMarkup(React.createElement(component,props));
 test('fresh browser renders honest empty home, history and progress',()=>{
   assert.match(render(Home,{data:empty}),/Bronze/);
   assert.match(render(Home,{data:empty}),/Your first session/);
@@ -47,37 +41,14 @@ test('saved history supplies totals, session sets and comparisons',()=>{
   assert.match(render(Progress,{data}),/More weight or reps/);
   assert.match(render(Home,{data}),/36/);
 });
-test('food does not pretend to save; settings has real account controls and no password UI',()=>{
+test('food does not pretend to save; settings has no fake account controls',()=>{
   assert.match(render(Food,{}),/isn’t available yet/);
   assert.doesNotMatch(render(Food,{}),/Save food|Calories/);
   assert.match(render(Food,{}),/Coming soon/);
   assert.match(render(Home,{data}),/Log Food · Coming soon/);
   assert.doesNotMatch(render(Home,{data}),/href="#\/food"/);
-  const settings = render(Settings,{data});
-  assert.match(settings,/lifter@example\.com/);
-  assert.match(settings,/Export my data/);
-  assert.match(settings,/Sign out/);
-  assert.match(settings,/Delete my account/);
-  assert.match(settings,/Type DELETE to confirm/);
-  assert.match(settings,/<button[^>]*disabled=""[^>]*>Delete my account/);
-  assert.doesNotMatch(settings,/Password|Coming soon/);
-});
-test('settings offers "Import data from this device" only to the account that may import, and not after importing',()=>{
-  const button = /Import data from this device/;
-  const stateFor = deviceImport => renderAs({...account,deviceImport},Settings,{data});
-  assert.doesNotMatch(stateFor(null),button);
-  assert.doesNotMatch(stateFor({status:'imported',workouts:2,goals:0}),button);
-  assert.match(stateFor({status:'declined',workouts:2,goals:0}),button);
-  assert.match(stateFor({status:'offered',workouts:1,goals:0}),button);
-});
-test('settings reports sync state and workouts the server refused',()=>{
-  assert.match(renderAs({...account,sync:{state:'error',rejected:[],message:'Couldn’t sync.'}},Settings,{data}),/Couldn’t sync/);
-  assert.match(renderAs({...account,sync:{state:'synced',at:Date.now(),rejected:['x']}},Settings,{data}),/1 workout couldn’t be uploaded/);
-});
-const { exportJson } = load('src/app/exportData.ts');
-test('export is the saved data, as JSON that parses back to the same thing',()=>{
-  assert.deepEqual(JSON.parse(exportJson(data)),JSON.parse(JSON.stringify(data)));
-  assert.equal(JSON.parse(exportJson(data)).workouts.length,2);
+  assert.match(render(Settings,{data}),/Export workout data/);
+  assert.doesNotMatch(render(Settings,{data}),/Sign in|Password/);
 });
 const { hasSeenIntroduction, completeIntroduction } = load('src/app/introductionPreference.ts');
 const { default: Introduction } = load('src/app/Introduction.tsx');
@@ -171,38 +142,6 @@ test('history explains a missing session bonus, and only then',()=>{
   assert.doesNotMatch(first,/No session bonus/);
   const old = renderToStaticMarkup(React.createElement(WorkoutList,{workouts:[workout('y','2026-09-18T12:00:00',100,3)],details:true}));
   assert.doesNotMatch(old,/No session bonus/);
-});
-
-const { default: Privacy } = load('src/app/Privacy.tsx');
-const { PRIVACY_HREF, TERMS_HREF } = load('src/app/legalLinks.ts');
-test('privacy page says what is stored and where, and how to export or delete; no placeholders',()=>{
-  const page = renderToStaticMarkup(React.createElement(Privacy,{signedIn:true}));
-  for (const phrase of [/Your email address/,/workouts/,/Supabase/,/Netlify/,/Google/,/No ads/,/No analytics/,/No tracking cookies/,/Export my data/,/Delete account/,/before accounts existed/,/Last updated/]) assert.match(page,phrase);
-  assert.doesNotMatch(page,/coming soon|todo|lorem|[\w.]+@[\w-]+\.\w+/i);
-});
-test('privacy page works signed out and its back link goes to the right place',()=>{
-  const out = renderToStaticMarkup(React.createElement(Privacy,{signedIn:false}));
-  assert.match(out,/href="#\/home"[^>]*>Back to sign in/);
-  assert.match(renderToStaticMarkup(React.createElement(Privacy,{signedIn:true})),/href="#\/settings"[^>]*>Back to Settings/);
-});
-test('settings links to the privacy page',()=>{
-  assert.equal(PRIVACY_HREF,'#/privacy');
-  assert.match(render(Settings,{data}),/href="#\/privacy"[^>]*>Privacy/);
-});
-
-const { default: Terms } = load('src/app/Terms.tsx');
-test('terms page: plain-language, no medical claims, points to privacy, works signed out, no placeholders',()=>{
-  const page = renderToStaticMarkup(React.createElement(Terms,{signedIn:false}));
-  for (const phrase of [/Terms of service/,/Last updated/,/not a measure of your health/,/does not give medical/,/as is/,/export your data or delete your account/i,/href="#\/privacy"/]) assert.match(page,phrase);
-  assert.match(page,/href="#\/home"[^>]*>Back to sign in/);
-  assert.match(renderToStaticMarkup(React.createElement(Terms,{signedIn:true})),/href="#\/settings"[^>]*>Back to Settings/);
-  assert.doesNotMatch(page,/coming soon|todo|lorem|[\w.]+@[\w-]+\.\w+/i);
-});
-test('terms and privacy link to each other, and settings links to terms',()=>{
-  assert.equal(TERMS_HREF,'#/terms');
-  assert.match(renderToStaticMarkup(React.createElement(Privacy,{signedIn:true})),/href="#\/terms"/);
-  assert.match(render(Settings,{data}),/href="#\/terms"[^>]*>Terms/);
-  assert.match(render(Settings,{data}),/href="#\/privacy"[^>]*>Privacy/);
 });
 
 const { default: MuscleMap } = load('src/app/MuscleMap.tsx');

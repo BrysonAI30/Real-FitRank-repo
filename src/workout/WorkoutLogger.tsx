@@ -5,10 +5,8 @@ import WorkoutReward from "./WorkoutReward";
 import { saveWorkout, withSaveLock, type Reward } from "./storage";
 import { clearDraft } from "./draft";
 import type { Workout } from "./model";
-import { useAccount } from "../cloud/accountContext";
 
 export default function WorkoutLogger({ onBack, onSaved }: { onBack: () => void; onSaved?: () => void }) {
-  const { storage } = useAccount();
   const [reward, setReward] = useState<Reward | null>(null);
   const [error, setError] = useState("");
   const submissionId = useRef<string | null>(null);
@@ -19,9 +17,9 @@ export default function WorkoutLogger({ onBack, onSaved }: { onBack: () => void;
     setError("");
     try {
       submissionId.current ??= crypto.randomUUID();
-      const commit = () => saveWorkout(exercises, submissionId.current!, storage);
+      const commit = () => saveWorkout(exercises, submissionId.current!);
       const saved = await withSaveLock(commit);
-      clearDraft(storage);
+      clearDraft();
       setReward(saved);
       onSaved?.();
     } catch (cause) {
