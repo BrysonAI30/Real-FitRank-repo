@@ -144,42 +144,7 @@
 /* Installed (standalone) app: no rubber-band overscroll. */
 @media(display-mode:standalone) { html,body { overscroll-behavior:none; } }
 
-/* Sign-in and device import prompts */
-.app-signin,.app-import { max-width:520px; }
-.app-signin>button,.app-import>button { margin-right:12px; }
-.app-signin-note { color:#93b3a2; font-size:12px; }
-
-/* Account settings */
-.app-account { max-width:560px; }
-.app-account>h3 { margin-top:28px; }
-.app-account-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:20px; }
-.app-account-actions>.app-button { margin-top:0; }
-.app-account label { display:block; margin-top:16px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#86a698; }
-.app-input { display:block; width:100%; max-width:320px; margin-top:6px; padding:10px 12px; border:1px solid #2e5a43; border-radius:1px; background:#07130e; color:#ecfdf5; font:inherit; font-size:16px; }
-.app-input:focus { outline:none; border-color:#34d399; }
-.app-danger { background:#b42318; border-color:#b42318; color:#fff; }
-.app-account+.app-account { margin-top:24px; }
 .app-breakdown .app-breakdown-note { display:block; color:#86a698; font-size:11px; line-height:1.5; }
-
-/* Email code sign-in */
-.app-signin-form { display:grid; gap:10px; margin-top:20px; max-width:360px; }
-.app-signin-form>p { margin:0; }
-.app-signin-form label { margin-top:6px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#86a698; }
-.app-signin-form .app-input { max-width:none; margin-top:0; }
-.app-code { font-size:24px; letter-spacing:.4em; text-align:center; font-variant-numeric:tabular-nums; }
-.app-signin-links { display:flex; flex-wrap:wrap; gap:12px; margin-top:6px; }
-.app-signin-form>button,.app-signin-links>button { margin-top:0; margin-right:0; }
-.app-signin-or { margin:16px 0 0; color:#86a698; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
-
-/* Privacy page and links */
-.app-privacy { max-width:680px; }
-.app-privacy h2 { margin-top:28px; font-size:16px; }
-.app-privacy ul { margin:12px 0 0; padding-left:20px; display:grid; gap:10px; }
-.app-privacy>p { margin-top:12px; }
-.app-privacy>.app-button { margin-top:28px; }
-.app-about>a.app-button { margin:20px 0 0 12px; }
-.app-privacy a:not(.app-button) { color:inherit; text-decoration:underline; }
-.app-signin-note a { color:inherit; text-decoration:underline; }
 
 /* Muscle map */
 .app-muscle { --mm-base:#10231a; --mm-0:#14281e; --mm-1:#1f6f4a; --mm-2:#14a05f; --mm-3:#57d364; --mm-4:#b8f43b; }
